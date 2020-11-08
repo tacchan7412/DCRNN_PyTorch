@@ -2,6 +2,7 @@ import os
 import pandas as pd
 
 
+print("started processing")
 df = pd.read_hdf('data/pems-bay.h5')
 sensor_ids = df.columns.values
 
