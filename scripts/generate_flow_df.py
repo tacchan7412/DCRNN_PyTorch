@@ -18,7 +18,7 @@ for filename in sorted(os.listdir(raw_dir)):
     df.columns = ['time', 'sensor_id', 'flow']
     df = df[df['sensor_id'].isin(sensor_ids)]
     df['time'] = pd.to_datetime(df['time'])
-    df.fillna(0)
+    df.fillna(0, inplace=True)
     df = df.pivot_table(values='flow', index='time', columns='sensor_id')
     frames.append(df)
 
