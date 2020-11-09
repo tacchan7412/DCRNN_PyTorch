@@ -9,6 +9,10 @@ import os
 import pandas as pd
 
 
+def generate_noise(X, eps):
+    return np.random.laplace(0, 1/eps, X.shape)
+
+
 def generate_graph_seq2seq_io_data(
         df, x_offsets, y_offsets, add_time_in_day=True, add_day_in_week=False, scaler=None
 ):
@@ -88,6 +92,14 @@ def generate_train_val_test(args):
         x[num_train: num_train + num_val],
         y[num_train: num_train + num_val],
     )
+    if args.eps > 0:
+        print('adding noise to train and val data')
+        T = x.shape[1] * (num_samples - num_test)
+        x_train[..., 0] += generate_noise(x_train[..., 0], args.eps)
+        y_train[..., 0] += generate_noise(y_train[..., 0], args.eps)
+        x_val[..., 0] += generate_noise(x_val[..., 0], args.eps)
+        y_val[..., 0] += generate_noise(y_val[..., 0], args.eps)
+        print('total eps =', args.eps * T)
     # test
     x_test, y_test = x[-num_test:], y[-num_test:]
 
@@ -118,6 +130,9 @@ if __name__ == "__main__":
         type=str,
         default="data/metr-la.h5",
         help="Raw traffic readings.",
+    )
+    parser.add_argument(
+        "--eps", type=float, default=0.0, help="Privacy parameter for each time step"
     )
     args = parser.parse_args()
     main(args)
