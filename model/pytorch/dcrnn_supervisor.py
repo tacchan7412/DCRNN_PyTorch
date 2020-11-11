@@ -44,6 +44,7 @@ class DCRNNSupervisor:
         dcrnn_model = DCRNNModel(adj_mx, self._logger, **self._model_kwargs)
         self.dcrnn_model = dcrnn_model.cuda() if torch.cuda.is_available() else dcrnn_model
         self._logger.info("Model created")
+        self._model_dir = self._train_kwargs.get('model_dir')
 
         self._epoch_num = self._train_kwargs.get('epoch', 0)
         if self._epoch_num > 0:
@@ -78,20 +79,20 @@ class DCRNNSupervisor:
         return log_dir
 
     def save_model(self, epoch):
-        if not os.path.exists('models/'):
-            os.makedirs('models/')
+        if not os.path.exists(self._model_dir):
+            os.makedirs(self._model_dir)
 
         config = dict(self._kwargs)
         config['model_state_dict'] = self.dcrnn_model.state_dict()
         config['epoch'] = epoch
-        torch.save(config, 'models/epo%d.tar' % epoch)
+        torch.save(config, self._model_dir + '/epo%d.tar' % epoch)
         self._logger.info("Saved model at {}".format(epoch))
-        return 'models/epo%d.tar' % epoch
+        return self._model_dir + '/epo%d.tar' % epoch
 
     def load_model(self):
         self._setup_graph()
-        assert os.path.exists('models/epo%d.tar' % self._epoch_num), 'Weights at epoch %d not found' % self._epoch_num
-        checkpoint = torch.load('models/epo%d.tar' % self._epoch_num, map_location='cpu')
+        assert os.path.exists(self._model_dir + '/epo%d.tar' % self._epoch_num), 'Weights at epoch %d not found' % self._epoch_num
+        checkpoint = torch.load(self._model_dir + '/epo%d.tar' % self._epoch_num, map_location='cpu')
         self.dcrnn_model.load_state_dict(checkpoint['model_state_dict'])
         self._logger.info("Loaded model at {}".format(self._epoch_num))
 

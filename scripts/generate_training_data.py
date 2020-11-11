@@ -13,9 +13,8 @@ def generate_noise(X, eps):
     return np.random.laplace(0, 1/eps, X.shape)
 
 
-def generate_graph_seq2seq_io_data(
-        df, x_offsets, y_offsets, add_time_in_day=True, add_day_in_week=False, scaler=None
-):
+def generate_graph_seq2seq_io_data(df, x_offsets, y_offsets, eps=0,
+                                   add_time_in_day=True, add_day_in_week=False, scaler=None):
     """
     Generate samples from
     :param df:
@@ -30,7 +29,13 @@ def generate_graph_seq2seq_io_data(
     """
 
     num_samples, num_nodes = df.shape
-    data = np.expand_dims(df.values, axis=-1)
+    data = df.values
+    if eps > 0:
+        print('adding noise to data')
+        # This procedure randomize test data as well
+        # Need to copy it from non-noisy one for now
+        data += generate_noise(data, eps)
+    data = np.expand_dims(data, axis=-1)
     data_list = [data]
     if add_time_in_day:
         time_ind = (df.index.values - df.index.values.astype("datetime64[D]")) / np.timedelta64(1, "D")
@@ -72,6 +77,7 @@ def generate_train_val_test(args):
         df,
         x_offsets=x_offsets,
         y_offsets=y_offsets,
+        eps=args.eps,
         add_time_in_day=True,
         add_day_in_week=False,
     )
@@ -92,14 +98,6 @@ def generate_train_val_test(args):
         x[num_train: num_train + num_val],
         y[num_train: num_train + num_val],
     )
-    if args.eps > 0:
-        print('adding noise to train and val data')
-        T = x.shape[1] * (num_samples - num_test)
-        x_train[..., 0] += generate_noise(x_train[..., 0], args.eps)
-        y_train[..., 0] += generate_noise(y_train[..., 0], args.eps)
-        x_val[..., 0] += generate_noise(x_val[..., 0], args.eps)
-        y_val[..., 0] += generate_noise(y_val[..., 0], args.eps)
-        print('total eps =', args.eps * T)
     # test
     x_test, y_test = x[-num_test:], y[-num_test:]
 
