@@ -4,6 +4,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import argparse
+from pathlib import Path
 import numpy as np
 import os
 import pandas as pd
@@ -109,6 +110,8 @@ def generate_train_val_test(args):
     )
     # test (not randomized)
     x_test, y_test = raw_x[-num_test:], raw_y[-num_test:]
+
+    Path(args.output_dir).mkdir(parents=True, exists_ok=True)
 
     for cat in ["train", "val", "test"]:
         _x, _y = locals()["x_" + cat], locals()["y_" + cat]
