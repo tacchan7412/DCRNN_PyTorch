@@ -111,7 +111,7 @@ def generate_train_val_test(args):
     # test (not randomized)
     x_test, y_test = raw_x[-num_test:], raw_y[-num_test:]
 
-    Path(args.output_dir).mkdir(parents=True, exists_ok=True)
+    Path(args.output_dir).mkdir(parents=True, exist_ok=True)
 
     for cat in ["train", "val", "test"]:
         _x, _y = locals()["x_" + cat], locals()["y_" + cat]
