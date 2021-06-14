@@ -10,10 +10,11 @@ import pandas as pd
 
 
 def generate_noise(X, eps):
-    return np.random.laplace(0, 1/eps, X.shape)
+    assert eps > 0
+    return X
 
 
-def generate_graph_seq2seq_io_data(df, x_offsets, y_offsets, eps=0,
+def generate_graph_seq2seq_io_data(df, x_offsets, y_offsets, eps=0, delta=0,
                                    add_time_in_day=True, add_day_in_week=False, scaler=None):
     """
     Generate samples from
@@ -78,6 +79,14 @@ def generate_train_val_test(args):
         x_offsets=x_offsets,
         y_offsets=y_offsets,
         eps=args.eps,
+        delta=args.delta,
+        add_time_in_day=True,
+        add_day_in_week=False,
+    )
+    raw_x, raw_y = generate_graph_seq2seq_io_data(
+        df,
+        x_offsets=x_offsets,
+        y_offsets=y_offsets,
         add_time_in_day=True,
         add_day_in_week=False,
     )
@@ -98,8 +107,8 @@ def generate_train_val_test(args):
         x[num_train: num_train + num_val],
         y[num_train: num_train + num_val],
     )
-    # test
-    x_test, y_test = x[-num_test:], y[-num_test:]
+    # test (not randomized)
+    x_test, y_test = raw_x[-num_test:], raw_y[-num_test:]
 
     for cat in ["train", "val", "test"]:
         _x, _y = locals()["x_" + cat], locals()["y_" + cat]
@@ -130,7 +139,10 @@ if __name__ == "__main__":
         help="Raw traffic readings.",
     )
     parser.add_argument(
-        "--eps", type=float, default=0.0, help="Privacy parameter for each time step"
+        "--eps", type=float, default=0.0, help="Privacy parameter, epsilon"
+    )
+    parser.add_argument(
+        "--delta", type=float, default=0.0, help="Privacy parameter, delta"
     )
     args = parser.parse_args()
     main(args)
