@@ -4,19 +4,17 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import argparse
+import yaml
 from pathlib import Path
 import numpy as np
 import os
 import pandas as pd
 
-
-def generate_noise(X, eps):
-    assert eps > 0
-    return X
+import ssfilterDP.mechanism as mc
 
 
-def generate_graph_seq2seq_io_data(df, x_offsets, y_offsets, eps=0, delta=0,
-                                   add_time_in_day=True, add_day_in_week=False, scaler=None):
+def generate_graph_seq2seq_io_data(df, x_offsets, y_offsets,
+                                   add_time_in_day=True, add_day_in_week=False, scaler=None, config=None, raw=True):
     """
     Generate samples from
     :param df:
@@ -32,11 +30,13 @@ def generate_graph_seq2seq_io_data(df, x_offsets, y_offsets, eps=0, delta=0,
 
     num_samples, num_nodes = df.shape
     data = df.values
-    if eps > 0:
+    if config:
+        num_samples = int(config.T / 0.8)
+        data = data[:num_samples]
         print('adding noise to data')
-        # This procedure randomize test data as well
-        # Need to copy it from non-noisy one for now
-        data += generate_noise(data, eps)
+        if not raw:
+            if config.alg == 'gaussian':
+                data = mc.gaussian(data, config.eps, config.delta, np.sqrt(config.I))
     data = np.expand_dims(data, axis=-1)
     data_list = [data]
     if add_time_in_day:
@@ -64,8 +64,8 @@ def generate_graph_seq2seq_io_data(df, x_offsets, y_offsets, eps=0, delta=0,
     return x, y
 
 
-def generate_train_val_test(args):
-    df = pd.read_hdf(args.traffic_df_filename)
+def generate_train_val_test(traffic_df_filename, config):
+    df = pd.read_hdf(traffic_df_filename)
     # 0 is the latest observed sample.
     x_offsets = np.sort(
         # np.concatenate(([-week_size + 1, -day_size + 1], np.arange(-11, 1, 1)))
@@ -79,10 +79,10 @@ def generate_train_val_test(args):
         df,
         x_offsets=x_offsets,
         y_offsets=y_offsets,
-        eps=args.eps,
-        delta=args.delta,
         add_time_in_day=True,
         add_day_in_week=False,
+        config=config,
+        raw=False,
     )
     raw_x, raw_y = generate_graph_seq2seq_io_data(
         df,
@@ -90,6 +90,8 @@ def generate_train_val_test(args):
         y_offsets=y_offsets,
         add_time_in_day=True,
         add_day_in_week=False,
+        config=config,
+        raw=True,
     )
 
     print("x shape: ", x.shape, ", y shape: ", y.shape)
@@ -111,13 +113,13 @@ def generate_train_val_test(args):
     # test (not randomized)
     x_test, y_test = raw_x[-num_test:], raw_y[-num_test:]
 
-    Path(args.output_dir).mkdir(parents=True, exist_ok=True)
+    Path(config.output_dir).mkdir(parents=True, exist_ok=True)
 
     for cat in ["train", "val", "test"]:
         _x, _y = locals()["x_" + cat], locals()["y_" + cat]
         print(cat, "x: ", _x.shape, "y:", _y.shape)
         np.savez_compressed(
-            os.path.join(args.output_dir, "%s.npz" % cat),
+            os.path.join(config.output_dir, "%s.npz" % cat),
             x=_x,
             y=_y,
             x_offsets=x_offsets.reshape(list(x_offsets.shape) + [1]),
@@ -127,25 +129,36 @@ def generate_train_val_test(args):
 
 def main(args):
     print("Generating training data")
-    generate_train_val_test(args)
+    with open(args.config_filename) as f:
+        config = yaml.load(f)
+    generate_train_val_test(args.traffic_df_filename, config)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    '''
     parser.add_argument(
         "--output_dir", type=str, default="data/", help="Output directory."
     )
+    '''
     parser.add_argument(
         "--traffic_df_filename",
         type=str,
         default="data/metr-la.h5",
         help="Raw traffic readings.",
     )
+    parser.add_argument('--config_filename', default=None, type=str,
+                        help='Configuration filename for generating the data.')
+    '''
     parser.add_argument(
         "--eps", type=float, default=0.0, help="Privacy parameter, epsilon"
     )
     parser.add_argument(
         "--delta", type=float, default=0.0, help="Privacy parameter, delta"
     )
+    parser.add_argument(
+        "--dp_alg", type=str, default="ss", help="Output directory."
+    )
+    '''
     args = parser.parse_args()
     main(args)
