@@ -1,0 +1,3 @@
+[submodule "scripts/ssfilterDP"]
+	path = scripts/ssfilterDP
+	url = git@github.com:tacchan7412/ssfilterDP.git
