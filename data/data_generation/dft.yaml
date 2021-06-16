@@ -1,0 +1,8 @@
+---
+alg: dft
+output_dir: /tmp2/PEMS/PEMS-BAY-FLOW/dft/1
+eps: 0.5
+delta: 0.0005
+T: 1800
+I: 180
+k: 20

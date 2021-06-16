@@ -10,7 +10,10 @@ import numpy as np
 import os
 import pandas as pd
 
-import ssfilterDP.mechanism as mc
+import sys
+sys.path.insert(0, './scripts/ssfilterDP')
+import mechanism as mc
+import filtering
 
 
 def generate_graph_seq2seq_io_data(df, x_offsets, y_offsets,
@@ -30,22 +33,43 @@ def generate_graph_seq2seq_io_data(df, x_offsets, y_offsets,
 
     num_samples, num_nodes = df.shape
     data = df.values
+
     if config:
-        num_samples = int(config.T / 0.8)
+        num_samples = int(config['T'] / 0.8)
         data = data[:num_samples]
         print('adding noise to data')
         if not raw:
-            if config.alg == 'gaussian':
-                data = mc.gaussian(data, config.eps, config.delta, np.sqrt(config.I))
+            if config['alg'] == 'gaussian':
+                data = mc.gaussian(data, config['eps'], config['delta'], np.sqrt(config['I']))
+            elif config['alg'] == 'dft':
+                for i in range(num_nodes):
+                    data[:,i] =  mc.dft_gaussian(data[:,i], config['eps'], config['delta'], np.sqrt(config['I']), config['k'])
+            elif config['alg'] == 'ss':
+                for i in range(num_nodes):
+                    data[:,i] = mc.ss_gaussian(data[:,i], config['eps'], config['delta'], config['I'], config['k'], interpolate_kind=config['interpolate_kind'])
+            elif config['alg'] == 'ssf':
+                h = filtering.get_h('gaussian', config['T'], std=config['std'])
+                A = filtering.get_circular(h)
+                L = sum(h**2)
+                sr = mc.srank_circular(h)
+                for i in range(num_nodes):
+                    data[:,i] = mc.ssf_gaussian(data[:,i], A, config['eps'], config['delta'], np.sqrt(config['I']), config['k'], sr=sr, L=L, interpolate_kind=config['interpolate_kind'])
+            else:
+                print('no randomization')
+
     data = np.expand_dims(data, axis=-1)
     data_list = [data]
     if add_time_in_day:
         time_ind = (df.index.values - df.index.values.astype("datetime64[D]")) / np.timedelta64(1, "D")
         time_in_day = np.tile(time_ind, [1, num_nodes, 1]).transpose((2, 1, 0))
+        if config:
+            time_in_day = time_in_day[:num_samples]
         data_list.append(time_in_day)
     if add_day_in_week:
         day_in_week = np.zeros(shape=(num_samples, num_nodes, 7))
         day_in_week[np.arange(num_samples), :, df.index.dayofweek] = 1
+        if config:
+            day_in_week = day_in_week[:num_samples]
         data_list.append(day_in_week)
 
     data = np.concatenate(data_list, axis=-1)
@@ -113,13 +137,13 @@ def generate_train_val_test(traffic_df_filename, config):
     # test (not randomized)
     x_test, y_test = raw_x[-num_test:], raw_y[-num_test:]
 
-    Path(config.output_dir).mkdir(parents=True, exist_ok=True)
+    Path(config['output_dir']).mkdir(parents=True, exist_ok=True)
 
     for cat in ["train", "val", "test"]:
         _x, _y = locals()["x_" + cat], locals()["y_" + cat]
         print(cat, "x: ", _x.shape, "y:", _y.shape)
         np.savez_compressed(
-            os.path.join(config.output_dir, "%s.npz" % cat),
+            os.path.join(config['output_dir'], "%s.npz" % cat),
             x=_x,
             y=_y,
             x_offsets=x_offsets.reshape(list(x_offsets.shape) + [1]),
@@ -131,6 +155,7 @@ def main(args):
     print("Generating training data")
     with open(args.config_filename) as f:
         config = yaml.load(f)
+    print(config.keys())
     generate_train_val_test(args.traffic_df_filename, config)
 
 
