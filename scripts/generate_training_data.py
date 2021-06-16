@@ -48,7 +48,7 @@ def generate_graph_seq2seq_io_data(df, x_offsets, y_offsets,
                 for i in range(num_nodes):
                     data[:,i] = mc.ss_gaussian(data[:,i], config['eps'], config['delta'], config['I'], config['k'], interpolate_kind=config['interpolate_kind'])
             elif config['alg'] == 'ssf':
-                h = filtering.get_h('gaussian', config['T'], std=config['std'])
+                h = filtering.get_h('gaussian', num_samples, std=config['std'])
                 A = filtering.get_circular(h)
                 L = sum(h**2)
                 sr = mc.srank_circular(h)
