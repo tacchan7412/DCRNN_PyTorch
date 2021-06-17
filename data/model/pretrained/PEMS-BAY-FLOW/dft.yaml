@@ -1,0 +1,42 @@
+base_dir: /tmp3/tacchan7412/DCRNN_PyTorch/model
+data:
+  batch_size: 64
+  dataset_dir: /tmp2/PEMS/PEMS-BAY-FLOW/raw
+  graph_pkl_filename: /tmp2/PEMS/sensor_graph/adj_mx_bay.pkl
+  test_batch_size: 64
+  val_batch_size: 64
+log_level: INFO
+model:
+  cl_decay_steps: 2000
+  filter_type: dual_random_walk
+  horizon: 12
+  input_dim: 2
+  l1_decay: 0
+  max_diffusion_step: 2
+  num_nodes: 325
+  num_rnn_layers: 2
+  output_dim: 1
+  rnn_units: 64
+  seq_len: 12
+  use_curriculum_learning: true
+train:
+  base_lr: 0.01
+  dropout: 0
+  epoch: 53
+  epochs: 100
+  epsilon: 0.001
+  global_step: 30780
+  log_dir: /tmp3/tacchan7412/DCRNN_PyTorch/model/pretrained/PEMS-BAY-FLOW/
+  lr_decay_ratio: 0.1
+  max_grad_norm: 5
+  max_to_keep: 100
+  min_learning_rate: 2.0e-06
+  model_filename: /tmp3/tacchan7412/DCRNN_PyTorch/models/bay_flow/dft/1/epo30.tar
+  optimizer: adam
+  patience: 50
+  steps:
+  - 20
+  - 30
+  - 40
+  - 50
+  test_every_n_epochs: 10
