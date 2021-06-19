@@ -17,9 +17,11 @@ def run_dcrnn(args):
 
         supervisor = DCRNNSupervisor(adj_mx=adj_mx, **supervisor_config)
         mean_score, outputs = supervisor.evaluate('test')
-        np.savez_compressed(args.output_filename, **outputs)
+        os.makedirs(args.output_dir, exist_ok=True)
+        output_filename = os.path.join(args.output_dir, 'dcrnn_predictions.npz')
+        np.savez_compressed(output_filename, **outputs)
         print("MAE : {}".format(mean_score))
-        print('Predictions saved as {}.'.format(args.output_filename))
+        print('Predictions saved as {}.'.format(output_filename))
 
 
 if __name__ == '__main__':
@@ -28,6 +30,6 @@ if __name__ == '__main__':
     parser.add_argument('--use_cpu_only', default=False, type=str, help='Whether to run tensorflow on cpu.')
     parser.add_argument('--config_filename', default='data/model/pretrained/METR-LA/config.yaml', type=str,
                         help='Config file for pretrained model.')
-    parser.add_argument('--output_filename', default='data/dcrnn_predictions.npz')
+    parser.add_argument('--output_dir', default='data')
     args = parser.parse_args()
     run_dcrnn(args)
