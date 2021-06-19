@@ -37,8 +37,8 @@ def generate_graph_seq2seq_io_data(df, x_offsets, y_offsets,
     if config:
         num_samples = int(config['T'] / 0.8)
         data = data[:num_samples]
-        print('adding noise to data')
         if not raw:
+            print('adding noise to data')
             if config['alg'] == 'gaussian':
                 data = mc.gaussian(data, config['eps'], config['delta'], np.sqrt(config['I']))
             elif config['alg'] == 'dft':
@@ -100,7 +100,7 @@ def generate_train_val_test(traffic_df_filename, config):
     # x: (num_samples, input_length, num_nodes, input_dim)
     # y: (num_samples, output_length, num_nodes, output_dim)
     x, y = generate_graph_seq2seq_io_data(
-        df,
+        df.copy(),
         x_offsets=x_offsets,
         y_offsets=y_offsets,
         add_time_in_day=True,
@@ -109,7 +109,7 @@ def generate_train_val_test(traffic_df_filename, config):
         raw=False,
     )
     raw_x, raw_y = generate_graph_seq2seq_io_data(
-        df,
+        df.copy(),
         x_offsets=x_offsets,
         y_offsets=y_offsets,
         add_time_in_day=True,
