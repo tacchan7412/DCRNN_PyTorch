@@ -22,7 +22,7 @@ def create_table(alg):
 
 
 def read_table(alg):
-    file_path = os.path.join(TABLE_DIR, alg)
+    file_path = os.path.join(TABLE_DIR, f'{alg}.pkl')
     if os.path.exists(file_path):
         df = pd.read_pickle(file_path)
     else:
@@ -33,7 +33,7 @@ def read_table(alg):
 def add_row(alg, row):
     file_path = os.path.join(TABLE_DIR, f'{alg}.pkl')
     df = read_table(alg)
-    df.append(row, ignore_index=True)
+    df = df.append(row, ignore_index=True)
     df.to_pickle(file_path)
 
 
@@ -42,5 +42,5 @@ def search_id(alg, param):
     target_rows = df.loc[(df[list(param)] == pd.Series(param)).all(axis=1)]
     if len(target_rows) != 1:
         print('multiple rows matching the param')
-    id_str = target_rows[0]['id']
+    id_str = target_rows.iloc[0]['id']
     return id_str
