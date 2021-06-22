@@ -1,4 +1,5 @@
 ---
 alg: raw
 output_dir: /tmp2/PEMS/PEMS-BAY-FLOW/raw
-T: 1800
+param:
+  T: 1800

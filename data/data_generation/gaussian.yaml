@@ -1,7 +1,9 @@
 ---
 alg: gaussian
-output_dir: /tmp2/PEMS/PEMS-BAY-FLOW/gaussian/1
-eps: 0.5
-delta: 0.0005
-T: 1800
-I: 180
+output_dir: /tmp2/PEMS/PEMS-BAY-FLOW/gaussian
+param:
+  rep: 1
+  eps: 0.5
+  delta: 0.0005
+  T: 1800
+  I: 180

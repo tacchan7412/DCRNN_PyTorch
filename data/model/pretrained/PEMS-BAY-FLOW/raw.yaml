@@ -22,7 +22,7 @@ model:
 train:
   base_lr: 0.01
   dropout: 0
-  epoch: 74
+  epoch: -1
   epochs: 100
   epsilon: 0.001
   global_step: 30780
@@ -40,3 +40,7 @@ train:
   - 40
   - 50
   test_every_n_epochs: 10
+
+alg: raw
+param:
+  T: 1800

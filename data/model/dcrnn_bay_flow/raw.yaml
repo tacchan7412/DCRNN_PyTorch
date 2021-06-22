@@ -38,3 +38,8 @@ train:
   patience: 50
   steps: [20, 30, 40, 50]
   test_every_n_epochs: 10
+
+alg: raw
+output_dir: /tmp2/PEMS/PEMS-BAY-FLOW/raw
+param:
+  T: 1800
