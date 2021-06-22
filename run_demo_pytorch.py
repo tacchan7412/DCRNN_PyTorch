@@ -17,6 +17,7 @@ def run_dcrnn(args):
         sensor_ids, sensor_id_to_ind, adj_mx = load_graph_data(graph_pkl_filename)
 
         id_str = search_id(supervisor_config['alg'], supervisor_config['param'])
+        print(id_str)
         model_dir = supervisor_config['train']['model_dir']
         supervisor_config['train']['model_dir'] = os.path.join(model_dir, id_str)
         dset_dir = supervisor_config['data']['dataset_dir']
@@ -26,8 +27,9 @@ def run_dcrnn(args):
 
         supervisor = DCRNNSupervisor(adj_mx=adj_mx, **supervisor_config)
         mean_score, outputs = supervisor.evaluate('test')
-        os.makedirs(args.output_dir, exist_ok=True)
-        output_filename = os.path.join(args.output_dir, 'dcrnn_predictions.npz')
+        output_dir = os.path.join(args.output_dir, id_str)
+        os.makedirs(output_dir, exist_ok=True)
+        output_filename = os.path.join(output_dir, 'dcrnn_predictions.npz')
         np.savez_compressed(output_filename, **outputs)
         print("MAE : {}".format(mean_score))
         print('Predictions saved as {}.'.format(output_filename))
