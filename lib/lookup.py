@@ -2,6 +2,7 @@ import pandas as pd
 import os
 
 
+
 TABLE_DIR = 'data/lookup_table'
 
 
@@ -44,3 +45,10 @@ def search_id(alg, param):
         print('multiple rows matching the param')
     id_str = target_rows.iloc[0]['id']
     return id_str
+
+'''
+When manually add columns for new parameters:
+`df[param_name] = param_value`.
+When manually remove rows:
+`df.drop(labels=indices, inplace=True)`
+'''
