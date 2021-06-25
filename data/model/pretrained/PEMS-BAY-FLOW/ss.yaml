@@ -1,4 +1,4 @@
-base_dir: /tmp2/tacchan7412/DCRNN_PyTorch/model
+base_dir: /tmp3/tacchan7412/DCRNN_PyTorch/model
 data:
   batch_size: 64
   dataset_dir: /tmp2/PEMS/PEMS-BAY-FLOW/ss
@@ -26,12 +26,12 @@ train:
   epochs: 100
   epsilon: 0.001
   global_step: 30780
-  log_dir: /tmp2/tacchan7412/DCRNN_PyTorch/model/pretrained/PEMS-BAY-FLOW/ss
+  log_dir: /tmp3/tacchan7412/DCRNN_PyTorch/model/pretrained/PEMS-BAY-FLOW/ss
   lr_decay_ratio: 0.1
   max_grad_norm: 5
   max_to_keep: 100
   min_learning_rate: 2.0e-06
-  model_dir: /tmp2/tacchan7412/DCRNN_PyTorch/models/bay_flow/ss
+  model_dir: /tmp3/tacchan7412/DCRNN_PyTorch/models/bay_flow/ss
   optimizer: adam
   patience: 50
   steps:
@@ -50,3 +50,5 @@ param:
   I: 180
   k: 10
   interpolate_kind: slinear
+  smooth: ''
+  smooth_window: 0

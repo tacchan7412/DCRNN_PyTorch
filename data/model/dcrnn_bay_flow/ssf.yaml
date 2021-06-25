@@ -49,3 +49,5 @@ param:
   k: 10
   std: 10
   interpolate_kind: slinear
+  smooth: ''
+  smooth_window: 0
