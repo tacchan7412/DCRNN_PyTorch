@@ -36,7 +36,8 @@ def generate_graph_seq2seq_io_data(df, x_offsets, y_offsets,
     data = df.values
 
     if config:
-        num_samples = int(config['T'] / 0.8)
+        T = config['T']
+        num_samples = int(T / 0.8)
         data = data[:num_samples]
         if not raw:
             print('adding noise to data')
@@ -44,17 +45,24 @@ def generate_graph_seq2seq_io_data(df, x_offsets, y_offsets,
                 data = mc.gaussian(data, config['eps'], config['delta'], np.sqrt(config['I']))
             elif alg == 'dft':
                 for i in range(num_nodes):
-                    data[:,i] =  mc.dft_gaussian(data[:,i], config['eps'], config['delta'], np.sqrt(config['I']), config['k'])
+                    data[:,i] =  mc.dft_gaussian(data[:,i], config['eps'], config['delta'],
+                                                 np.sqrt(config['I']), config['k'])
             elif alg == 'ss':
                 for i in range(num_nodes):
-                    data[:,i] = mc.ss_gaussian(data[:,i], config['eps'], config['delta'], config['I'], config['k'], interpolate_kind=config['interpolate_kind'])
+                    data[:T,i] = mc.ss_gaussian(data[:T,i], config['eps'], config['delta'],
+                                                config['I'], config['k'],
+                                                interpolate_kind=config['interpolate_kind'],
+                                                smooth=config['smooth'], smooth_window=config['smooth_window'])
             elif alg == 'ssf':
-                h = filtering.get_h('gaussian', num_samples, std=config['std'])
+                h = filtering.get_h('gaussian', T, std=config['std'])
                 A = filtering.get_circular(h)
                 L = sum(h**2)
                 sr = mc.srank_circular(h)
                 for i in range(num_nodes):
-                    data[:,i] = mc.ssf_gaussian(data[:,i], A, config['eps'], config['delta'], np.sqrt(config['I']), config['k'], sr=sr, L=L, interpolate_kind=config['interpolate_kind'])
+                    data[:T,i] = mc.ssf_gaussian(data[:T,i], A, config['eps'], config['delta'],
+                                                 np.sqrt(config['I']), config['k'], sr=sr, L=L,
+                                                 interpolate_kind=config['interpolate_kind'],
+                                                 smooth=config['smooth'], smooth_window=config['smooth_window'])
             else:
                 print('no randomization')
 
