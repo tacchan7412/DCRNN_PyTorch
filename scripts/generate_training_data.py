@@ -163,6 +163,9 @@ def main(args):
     with open(args.config_filename) as f:
         config = yaml.load(f)
     print(config.keys())
+    if args.rep:
+        config['param']['rep'] = args.rep
+        print('overwrite rep parameter with argument')
     generate_train_val_test(args.traffic_df_filename, config)
 
 
@@ -176,5 +179,6 @@ if __name__ == "__main__":
     )
     parser.add_argument('--config_filename', default=None, type=str,
                         help='Configuration filename for generating the data.')
+    parser.add_argument('--rep', default=None, type=int, help='trial No.')
     args = parser.parse_args()
     main(args)

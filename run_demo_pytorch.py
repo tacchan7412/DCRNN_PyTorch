@@ -12,6 +12,9 @@ from model.pytorch.dcrnn_supervisor import DCRNNSupervisor
 def run_dcrnn(args):
     with open(args.config_filename) as f:
         supervisor_config = yaml.load(f)
+        if args.rep:
+            supervisor_config['param']['rep'] = args.rep
+            print('overwrite rep parameter with argument')
 
         graph_pkl_filename = supervisor_config['data'].get('graph_pkl_filename')
         sensor_ids, sensor_id_to_ind, adj_mx = load_graph_data(graph_pkl_filename)
@@ -42,5 +45,6 @@ if __name__ == '__main__':
     parser.add_argument('--config_filename', default='data/model/pretrained/METR-LA/config.yaml', type=str,
                         help='Config file for pretrained model.')
     parser.add_argument('--output_dir', default='data')
+    parser.add_argument('--rep', default=None, type=int, help='trial No.')
     args = parser.parse_args()
     run_dcrnn(args)
